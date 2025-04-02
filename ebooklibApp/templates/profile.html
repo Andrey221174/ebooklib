@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profile-header">
+    <img src="{{ profile.avatar.url }}" alt="Аватар" class="avatar">
+    <h2>{{ profile.nickname|default:user.username }}</h2>
+</div>
+
+<div class="marked-books">
+    <h3>Отмеченные книги:</h3>
+    {% if marked_books %}
+        <ul>
+            {% for book in marked_books %}
+                <li>{{ book.title }} ({{ book.author }})</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Вы пока не отметили ни одной книги.</p>
+    {% endif %}
+</div>
+
+<div class="actions">
+    <a href="{% url 'books' %}" class="btn">К списку книг</a>
+    <a href="{% url 'logout' %}" class="btn">Выйти</a>
+</div>
+{% endblock %}

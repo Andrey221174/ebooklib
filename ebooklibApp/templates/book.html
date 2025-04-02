@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Список книг</h1>
+
+<div class="search-form">
+    <form method="get">
+        <input type="text" name="title" placeholder="Название" value="{{ request.GET.title }}">
+        <input type="text" name="author" placeholder="Автор" value="{{ request.GET.author }}">
+        <select name="genre">
+            <option value="">Все жанры</option>
+            {% for genre in genres %}
+                <option value="{{ genre.name }}" {% if request.GET.genre == genre.name %}selected{% endif %}>
+                    {{ genre.name }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit">Поиск</button>
+    </form>
+</div>
+
+<div class="upload-form">
+    <h2>Загрузить новую книгу</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Загрузить</button>
+    </form>
+</div>
+
+<div class="books-list">
+    {% for book in books %}
+        <div class="book">
+            <h3>{{ book.title }}</h3>
+            <p>Автор: {{ book.author }}</p>
+            <p>Жанры: {% for genre in book.genres.all %}{{ genre.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+            <a href="{{ book.pdf.url }}" target="_blank">Читать</a>
+            <form action="{% url 'mark_book' book.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">
+                    {% if request.user in book.marked_by.all %}Убрать отметку{% else %}Отметить{% endif %}
+                </button>
+            </form>
+        </div>
+    {% empty %}
+        <p>Книги не найдены.</p>
+    {% endfor %}
+</div>
+
+<a href="{% url 'profile' %}" class="btn">Назад в профиль</a>
+{% endblock %}
