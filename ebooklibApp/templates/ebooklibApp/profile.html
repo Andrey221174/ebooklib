@@ -1,0 +1,21 @@
+{% extends "ebooklibApp/base.html" %}
+{% load static %}
+
+{% block content %}
+<h2>Профиль пользователя: {{ profile.nickname|default:user.username }}</h2>
+
+{% if profile.avatar %}
+    <img src="{{ profile.avatar.url }}" alt="Аватар" width="100">
+{% endif %}
+
+<h3>Отмеченные книги:</h3>
+<ul>
+    {% for book in marked_books %}
+        <li>{{ book.title }} ({{ book.author.name }})</li>
+    {% empty %}
+        <li>Нет отмеченных книг</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'books' %}">К списку книг</a>
+{% endblock %}
