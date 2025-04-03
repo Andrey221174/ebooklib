@@ -93,8 +93,15 @@ body {
 }
 
 .pagination {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
+    margin: 20px 0;
+    text-align: center;
+}
+.pagination a {
+    padding: 5px 10px;
+    margin: 0 5px;
+    border: 1px solid #ddd;
+}
+.pagination .current {
+    padding: 5px 10px;
+    font-weight: bold;
 }
