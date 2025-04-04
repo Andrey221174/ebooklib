@@ -1,154 +1,139 @@
 {% extends 'ebooklibApp/base.html' %}
 
+{% block title %}Библиотека книг{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4">Список книг</h1>
+    <h1 class="mb-4">Библиотека книг</h1>
     
     <!-- Поисковая форма -->
     <div class="card mb-4">
         <div class="card-body">
-            <form method="get" class="row g-3">
-                <div class="col-md-4">
-                    <label for="title" class="form-label">Поиск по названию</label>
-                    <input type="text" class="form-control" id="title" name="title" 
-                           value="{{ search_params.title }}" placeholder="Введите название">
-                </div>
-                
-                <div class="col-md-4">
-                    <label for="author" class="form-label">Поиск по автору</label>
-                    <input type="text" class="form-control" id="author" name="author"
-                           value="{{ search_params.author }}" placeholder="Введите автора">
-                </div>
-                
-                <div class="col-md-3">
-                    <label for="genre" class="form-label">Жанр</label>
-                    <select name="genre" class="form-select">
-                        <option value="">Все жанры</option>
-                        {% for genre in genres %}
-                        <option value="{{ genre.name }}" 
-                                {% if genre_query == genre.name %}selected{% endif %}>
-                            {{ genre.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="col-md-1 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Поиск</button>
+            <form method="get" action="{% url 'books' %}">
+                <div class="row">
+                    <div class="col-md-4">
+                        <input type="text" name="title" class="form-control" placeholder="Название книги" value="{{ title_query }}">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" name="author" class="form-control" placeholder="Автор" value="{{ author_query }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="genre" class="form-select">
+                            <option value="">Все жанры</option>
+                            {% for genre in genres %}
+                            <option value="{{ genre.name }}" {% if genre_query == genre.name %}selected{% endif %}>
+                                {{ genre.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Поиск</button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Результаты поиска -->
-    {% if page_obj.object_list %}
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            {% for book in page_obj %}
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">{{ book.title }}</h5>
+    <!-- Форма добавления новой книги -->
+    {% if user.is_authenticated %}
+    <div class="card mb-4">
+        <div class="card-header">Добавить новую книгу</div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-3">
+                    {% for field in form %}
+                    <div class="col-md-{% if field.name == 'file' %}12{% else %}6{% endif %}">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="text-danger">{{ field.errors }}</div>
+                        {% endif %}
                     </div>
-                    <div class="card-body">
-                        <p class="card-text">
-                            <strong>Автор:</strong> {{ book.author.name }}<br>
-                            <strong>Жанры:</strong> 
-                            {% for genre in book.genres.all %}
-                                {{ genre.name }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        </p>
+                    {% endfor %}
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-success">Добавить книгу</button>
                     </div>
-                    <div class="card-footer bg-transparent">
-                        {% if book.file_exists %}
-                            <a href="{{ book.file.url }}" download 
-                               class="btn btn-success btn-sm">
-                                <i class="fas fa-download"></i> Скачать
-                                <span class="badge bg-secondary ms-1">
-                                    {{ book.file.size|filesizeformat }}
-                                </span>
-                            </a>
-                        {% else %}
-                            <span class="text-danger">
-                                <i class="fas fa-exclamation-circle"></i> Файл недоступен
-                            </span>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Список книг -->
+    <div class="row">
+        {% for book in page_obj %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if book.cover %}
+                <img src="{{ book.cover.url }}" class="card-img-top" alt="{{ book.title }}" style="height: 200px; object-fit: contain;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ book.title }}</h5>
+                    <p class="card-text">
+                        <strong>Автор:</strong> {{ book.author.name }}<br>
+                        <strong>Жанры:</strong> 
+                        {% for genre in book.genres.all %}
+                        <span class="badge bg-secondary">{{ genre.name }}</span>
+                        {% endfor %}
+                    </p>
+                    <p class="card-text"><small class="text-muted">Добавлено: {{ book.upload_date|date:"d.m.Y" }}</small></p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'download_book' book.id %}" class="btn btn-sm btn-outline-primary">
+                            Скачать ({{ book.downloads }})
+                        </a>
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'mark_book' book.id %}" class="btn btn-sm {% if user in book.marked_by.all %}btn-warning{% else %}btn-outline-secondary{% endif %}">
+                            {% if user in book.marked_by.all %}★ В избранном{% else %}☆ В избранное{% endif %}
+                        </a>
                         {% endif %}
                     </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
-        
-        <!-- Пагинация -->
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page=1{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                            &laquo; Первая
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                            Назад
-                        </a>
-                    </li>
-                {% endif %}
-                
-                <li class="page-item active">
-                    <span class="page-link">
-                        Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
-                    </span>
-                </li>
-                
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                            Вперед
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                            Последняя &raquo;
-                        </a>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
-    {% else %}
-        <div class="alert alert-warning text-center">
-            <i class="fas fa-book-open me-2"></i> Книги не найдены. Попробуйте изменить параметры поиска.
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">Книги не найдены. Попробуйте изменить параметры поиска.</div>
         </div>
-    {% endif %}
-    
-    <!-- Форма добавления новой книги -->
-    {% if request.user.is_staff %}
-    <div class="card mt-5">
-        <div class="card-header bg-primary text-white">
-            <h3 class="mb-0">Загрузить новую книгу</h3>
-        </div>
-        <div class="card-body">
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="id_title" class="form-label">Название</label>
-                    {{ form.title }}
-                </div>
-                <div class="mb-3">
-                    <label for="id_author" class="form-label">Автор</label>
-                    {{ form.author }}
-                </div>
-                <div class="mb-3">
-                    <label for="id_genres" class="form-label">Жанры</label>
-                    {{ form.genres }}
-                </div>
-                <div class="mb-3">
-                    <label for="id_file" class="form-label">Файл книги (PDF)</label>
-                    {{ form.file }}
-                </div>
-                <button type="submit" class="btn btn-primary">Загрузить</button>
-            </form>
-        </div>
+        {% endfor %}
     </div>
+
+    <!-- Пагинация -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if title_query %}&title={{ title_query }}{% endif %}{% if author_query %}&author={{ author_query }}{% endif %}{% if genre_query %}&genre={{ genre_query }}{% endif %}">Первая</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if title_query %}&title={{ title_query }}{% endif %}{% if author_query %}&author={{ author_query }}{% endif %}{% if genre_query %}&genre={{ genre_query }}{% endif %}">Назад</a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><a class="page-link">{{ num }}</a></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if title_query %}&title={{ title_query }}{% endif %}{% if author_query %}&author={{ author_query }}{% endif %}{% if genre_query %}&genre={{ genre_query }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if title_query %}&title={{ title_query }}{% endif %}{% if author_query %}&author={{ author_query }}{% endif %}{% if genre_query %}&genre={{ genre_query }}{% endif %}">Вперед</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if title_query %}&title={{ title_query }}{% endif %}{% if author_query %}&author={{ author_query }}{% endif %}{% if genre_query %}&genre={{ genre_query }}{% endif %}">Последняя</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
     {% endif %}
 </div>
 {% endblock %}
