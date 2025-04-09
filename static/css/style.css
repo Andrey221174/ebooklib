@@ -3,14 +3,14 @@ body {
     line-height: 1.6;
     margin: 0;
     padding: 20px;
-    background-color: #f5f5f5;
+    background-image: url(/static/images/picture_site3.jpg);
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-    background: white;
+    background: rgba(255, 255, 255, 0.3);
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
@@ -104,4 +104,21 @@ body {
 .pagination .current {
     padding: 5px 10px;
     font-weight: bold;
+}
+
+.btn-back {
+    display: inline-block;
+    padding: 8px 15px;
+    background: #f0f0f0;
+    color: #333;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin: 20px 0;
+    transition: all 0.3s;
+}
+
+.btn-back:hover {
+    background: #e0e0e0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }

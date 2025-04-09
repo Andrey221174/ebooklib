@@ -1,0 +1,22 @@
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    {{ form.title.label_tag }} {{ form.title }}
+    
+    <div>
+        {{ form.author.label_tag }} {{ form.author }}
+        <p>Или</p>
+        {{ form.new_author.label_tag }} {{ form.new_author }}
+    </div>
+    
+    <div>
+        {{ form.genres.label_tag }} {{ form.genres }}
+        <p>Или</p>
+        {{ form.new_genre.label_tag }} {{ form.new_genre }}
+    </div>
+    
+    {{ form.pdf.label_tag }} {{ form.pdf }}
+    {{ form.file.label_tag }} {{ form.file }}
+    
+    <button type="submit">Сохранить</button>
+</form>

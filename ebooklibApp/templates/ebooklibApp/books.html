@@ -3,6 +3,7 @@
 {% block title %}Библиотека книг{% endblock %}
 
 {% block content %}
+<a href="{% url 'profile' %}" class="btn-back">Вернуться в профиль</a>
 <div class="container mt-4">
     <h1 class="mb-4">Библиотека книг</h1>
     
@@ -137,3 +138,4 @@
     {% endif %}
 </div>
 {% endblock %}
+

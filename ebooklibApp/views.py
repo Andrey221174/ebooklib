@@ -180,3 +180,18 @@ def logout_view(request):
     logout(request)
     messages.info(request, 'Вы успешно вышли из системы')
     return redirect('home')
+
+def add_book(request):
+    if request.method == 'POST':
+        form = BookForm(request.POST, request.FILES)
+        if form.is_valid():
+            book = form.save(commit=False)
+            if request.user.is_authenticated:
+                book.uploaded_by = request.user
+            book.save()
+            form.save_m2m()  # Для сохранения ManyToMany
+            return redirect('book_list')  # Замените на ваш URL
+    else:
+        form = BookForm()
+    
+    return render(request, 'ebooklibApp/add_book.html', {'form': form})
