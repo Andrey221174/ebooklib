@@ -44,7 +44,7 @@ class Book(models.Model):
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     marked_by = models.ManyToManyField(User, related_name='marked_books', blank=True)
-    file = models.FileField(upload_to='books/', blank=True, null=True)  # Поле для хранения файла книги
+    # file = models.FileField(upload_to='books/', blank=True, null=True) 
     downloads = models.PositiveIntegerField(default=0)
 
     def file_exists(self):

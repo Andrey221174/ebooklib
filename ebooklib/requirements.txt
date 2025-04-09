@@ -1,0 +1,8 @@
+Django==4.2.7
+Pillow==10.0.1  # Для работы с изображениями (аватары, обложки)
+psycopg2-binary==2.9.7  # Для PostgreSQL (если используется)
+python-dotenv==1.0.0  # Для работы с .env файлами
+whitenoise==6.5.0  # Для обслуживания статических файлов
+django-crispy-forms==2.0  # Если используете crispy-forms
+django-filter==23.3  # Для фильтрации книг
+django-widget-tweaks==1.5.0  # Для кастомизации форм
